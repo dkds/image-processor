@@ -3,6 +3,26 @@ const os = require("os");
 const app = require("./src/server");
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`);
-});
+if (cluster.isMaster) {
+  const numCPUs = os.cpus().length;
+  console.log(`Master process ${process.pid} is running`);
+  console.log(`Number of CPUs: ${numCPUs}`);
+  console.log("Starting workers...");
+  console.log("Waiting for workers to start...");
+
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork();
+  }
+  cluster.on("online", (worker) => {
+    console.log(`Worker ${worker.process.id} is online`);
+  });
+
+  cluster.on("exit", (worker) => {
+    console.log(`Worker ${worker.process.pid} died. Restarting...`);
+    cluster.fork();
+  });
+} else {
+  app.listen(PORT, () => {
+    console.log(`Worker ${process.pid} started on port ${PORT}`);
+  });
+}
