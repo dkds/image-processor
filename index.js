@@ -8,14 +8,10 @@ if (cluster.isMaster) {
   console.log(`Master process ${process.pid} is running`);
   console.log(`Number of CPUs: ${numCPUs}`);
   console.log("Starting workers...");
-  console.log("Waiting for workers to start...");
 
   for (let i = 0; i < numCPUs; i++) {
     cluster.fork();
   }
-  cluster.on("online", (worker) => {
-    console.log(`Worker ${worker.process.id} is online`);
-  });
 
   cluster.on("exit", (worker) => {
     console.log(`Worker ${worker.process.pid} died. Restarting...`);
