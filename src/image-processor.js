@@ -7,12 +7,18 @@ const {
 } = require("worker_threads");
 
 if (!isMainThread) {
+  console.log("Processing image in worker thread");
   sharp(workerData.filePath)
     .resize(300)
     .toFormat("webp")
     .toFile(`${workerData.filePath}-processed.webp`, (err, info) => {
-      if (err) parentPort.postMessage({ error: err.message });
-      else parentPort.postMessage({ success: info });
+      if (err) {
+        console.error("Error processing image:", err);
+        parentPort.postMessage({ error: err.message });
+      } else {
+        console.log("Image processed successfully:", info);
+        parentPort.postMessage({ success: info });
+      }
     });
 }
 
